@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.1](https://github.com/equinor/fmu-sumo-explorer/compare/v3.0.0...v3.0.1) (2026-11-26)
+
+
+### Bug Fixes
+
+* use new static case in tests ([#501](https://github.com/equinor/fmu-sumo-explorer/issues/501)) ([4cbc587](https://github.com/equinor/fmu-sumo-explorer/commit/4cbc587ab3bcb2b3837b0a08e5ccb4340da3cf26))
+
 ## [3.0.0](https://github.com/equinor/fmu-sumo-explorer/compare/v2.16.1...v3.0.0) (2026-11-19)
 
 
