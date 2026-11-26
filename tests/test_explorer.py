@@ -173,12 +173,12 @@ def test_get_cases_combinations(explorer: Explorer):
 
     cases = explorer.cases.filter(
         field=["DROGON", "JOHAN SVERDRUP"],
-        user=["peesv", "dbs"],
+        user=["peesv", "f_scout_ci"],
         status=["keep"],
     )
     for case in cases:
         assert (
-            case.user in ["peesv", "dbs"]
+            case.user in ["peesv", "f_scout_ci"]
             and case.field in ["DROGON", "JOHAN SVERDRUP"]
             and case.status == "keep"
         )
@@ -224,31 +224,28 @@ def test_case_surfaces_type(test_case: Case):
 
 def test_case_surfaces_size(test_case: Case):
     """Test that Case.surfaces has the correct size"""
-    assert len(test_case.surfaces) == 271
+    assert len(test_case.surfaces) == 2795
 
 
 def test_case_surfaces_filter(test_case: Case):
     """Test that Case.surfaces has the correct size"""
-    # filter on iteration stage
-    agg_surfs = test_case.surfaces.filter(stage="iteration")
-    assert len(agg_surfs) == 59
-
+    # filter on ensemble stage
+    agg_surfs = test_case.surfaces.filter(stage="ensemble")
+    assert len(agg_surfs) == 2200
     agg_surfs = test_case.surfaces.filter(aggregation=True)
-    assert len(agg_surfs)
+    assert len(agg_surfs) == 2200
 
     # filter on realization stage
     real_surfs = test_case.surfaces.filter(stage="realization")
-    assert len(real_surfs) == 212
+    assert len(real_surfs) == 281 * 2  # 281 surfaces for each realization
 
     real_surfs = test_case.surfaces.filter(realization=True)
-    assert len(real_surfs) == 212
+    assert len(real_surfs) == 281 * 2  # 281 surfaces for each realization
 
     # filter on ensemble
     real_surfs = real_surfs.filter(ensemble="iter-0")
-    assert len(real_surfs) == 212
+    assert len(real_surfs) == 281 * 2  # 281 surfaces for each realization
 
-    # for surf in real_surfs:
-    #     assert surf.ensemble == "iter-0"
     its = real_surfs.get_field_values("fmu.ensemble.name.keyword")
     assert len(its) == 1 and its[0] == "iter-0"
 
@@ -257,11 +254,8 @@ def test_case_surfaces_filter(test_case: Case):
     assert len(non_valid_name_surfs) == 0
 
     real_surfs = real_surfs.filter(name="Valysar Fm.")
-    assert len(real_surfs) == 56
+    assert len(real_surfs) == 72 * 2
 
-    # for surf in real_surfs:
-    #     assert surf.ensemble == "iter-0"
-    #     assert surf.name == "Valysar Fm."
     its = real_surfs.get_field_values("fmu.ensemble.name.keyword")
     assert len(its) == 1 and its[0] == "iter-0"
     names = real_surfs.get_field_values("data.name.keyword")
@@ -271,20 +265,16 @@ def test_case_surfaces_filter(test_case: Case):
     non_valid_content_surfs = real_surfs.filter(content="___not_valid")
     assert len(non_valid_content_surfs) == 0
 
-    real_surfs = real_surfs.filter(content="depth")
-    assert len(real_surfs) == 56
+    depth_surfs = real_surfs.filter(content="depth")
+    assert len(depth_surfs) == 8 * 2
 
     # filter on tagname
     non_valid_tagname_surfs = real_surfs.filter(tagname="___not_valid")
     assert len(non_valid_tagname_surfs) == 0
 
     real_surfs = real_surfs.filter(tagname="FACIES_Fraction_Channel")
-    assert len(real_surfs) == 4
+    assert len(real_surfs) == 2
 
-    # for surf in real_surfs:
-    #     assert surf.ensemble == "iter-0"
-    #     assert surf.name == "Valysar Fm."
-    #     assert surf.tagname == "FACIES_Fraction_Channel"
     its = real_surfs.get_field_values("fmu.ensemble.name.keyword")
     assert len(its) == 1 and its[0] == "iter-0"
     names = real_surfs.get_field_values("data.name.keyword")
@@ -297,7 +287,7 @@ def test_case_surfaces_filter(test_case: Case):
     assert len(non_valid_format_surfs) == 0
 
     real_surfs = real_surfs.filter(dataformat="irap_binary")
-    assert len(real_surfs) == 4
+    assert len(real_surfs) == 2
 
     # filter on realization
     real_surfs = real_surfs.filter(realization=0)
@@ -340,7 +330,7 @@ def test_seismic_case_by_uuid(explorer: Explorer, seismic_case_uuid: str):
 
     assert isinstance(case, Case)
     assert case.uuid == seismic_case_uuid
-    assert len(case.cubes) == 10
+    assert len(case.cubes) == 24
     cube = case.cubes[0]
     openvds_handle = cube.openvds_handle
 
@@ -457,7 +447,7 @@ def test_get_composite_buckets(explorer: Explorer, case_uuid: str):
         "agg_value_max": {"max": {"field": "data.bbox.zmax"}},
     }
     buckets = context.get_composite_buckets(sources, sub_aggs)
-    assert len(buckets) == 37
+    assert len(buckets) == 87
     # Every bucket should carry the full payload, not just the composite key.
     assert all(b["doc_count"] > 0 for b in buckets)
     bucket = next(
@@ -473,7 +463,7 @@ def test_get_composite_buckets(explorer: Explorer, case_uuid: str):
     min_value = bucket["agg_value_min"]["value"]
     max_value = bucket["agg_value_max"]["value"]
     assert min_value == 0
-    assert max_value == pytest.approx(0.34, 0.001)
+    assert max_value == pytest.approx(0.35, 0.001)
 
 
 def test_get_composite_buckets_missing_bucket(
